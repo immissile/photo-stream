@@ -56,35 +56,18 @@ var Photostream = {
      * 图片列表排序
      */
     group : function(photos) {
-        var fDate = function(t){
-            return Photostream.formatDate(new Date(photos[t].time))
-        }
-        var curr_date = ''
-        var new_arr = {};
-        var tmp_arr = [];
+        var groups = {};
         for(var i=0;i<photos.length;i++){
-            _time = photos[i].time;
-            _date = fDate(i)
-
-            if(i==0){
-                curr_date = fDate(i);
-                tmp_arr.push(photos[i]);
-                new_arr[curr_date] = tmp_arr;
-            }else{
-                if(curr_date == fDate(i)){
-                    //如果与上一个相同，则继续装入第一个
-                    tmp_arr.push(photos[i]);
-                }else{
-                    new_arr[curr_date] = tmp_arr;
-                    tmp_arr = [];
-                    //否则生成下一个key
-                    curr_date = fDate(i);
-                    tmp_arr.push(photos[i]);
-                    new_arr[curr_date] = tmp_arr;
-                }
+            var photo = photos[i];
+            var date = Photostream.formatDate(new Date(photo.time));
+            var group = groups[date];
+            if(!group){
+                group = [];
+                groups[date] = group;
             }
+            group.push(photo);
         }
-        return new_arr;
+        return groups;
     },
 
     /**
@@ -124,7 +107,7 @@ var Photostream = {
      */
     getPhotos : function(url, callback){
         //jsonp
-        url += url.split('?').length == 1 ? "?callback=?" : "&callback=?";
+        url += url.indexOf('?') == -1 ? "?callback=?" : "&callback=?";
         $.getJSON(url,function(o){
             var _r = {
                 'list' : Photostream.group(o.photos),
